@@ -61,3 +61,30 @@ main > img {
     background: var(--white);
     border-radius: 8px;
 }
+
+#medium-link {
+    background: var(--white);
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 3px 3px 3px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+#medium-link img {
+    height: 20px;
+}
+
+main {
+    min-height: calc(100vh - 6rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 6rem;
+    box-sizing: border-box;
+}
