@@ -8,9 +8,18 @@ canvas.height = height
 canvas.width = width
 
 const ctx = canvas.getContext("2d")
+
+// Load images
+const playerImg = new Image();
+playerImg.src = 'img/player.svg';  // ใส่ path รูป player ของคุณ
+
+const obstacleImg = new Image();
+obstacleImg.src = 'img/obstacle.svg';  // ใส่ path รูป obstacle ของคุณ
+
+// Fallback colors if images fail to load
 const colors = {
     player: "white",
-    obstacle: "#ccc",
+    obstacle: "white",
 }
 
 const gravity = 0.25
@@ -31,8 +40,8 @@ let bestScore = localStorage.getItem("bestScore") || 0
 updateBestScoreDisplay()
 
 const player = {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     posY: height / 3,
     posX: 100,
     velocityY: 0,
@@ -47,29 +56,52 @@ function updateBestScoreDisplay() {
 }
 
 function drawObstacle(obstacle) {
-    ctx.fillStyle = colors.obstacle
-    ctx.strokeStyle = "transparent"
-    // top
-    ctx.beginPath()
-    ctx.roundRect(obstacle.posX, 0, player.width, obstacle.spaceTop, [
-        0,
-        0,
-        cornerRadius,
-        cornerRadius,
-    ])
-    ctx.stroke()
-    ctx.fill()
+    // Check if image is loaded
+    if (obstacleImg.complete && obstacleImg.naturalWidth !== 0) {
+        // Top obstacle
+        ctx.drawImage(
+            obstacleImg, 
+            obstacle.posX, 
+            0, 
+            player.width, 
+            obstacle.spaceTop
+        );
+        
+        // Bottom obstacle
+        ctx.drawImage(
+            obstacleImg,
+            obstacle.posX,
+            obstacle.spaceBottom,
+            player.width,
+            height - obstacle.spaceBottom
+        );
+    } else {
+        // Fallback to original drawing method
+        ctx.fillStyle = colors.obstacle
+        ctx.strokeStyle = "transparent"
+        
+        // top
+        ctx.beginPath()
+        ctx.roundRect(obstacle.posX, 0, player.width, obstacle.spaceTop, [
+            0,
+            0,
+            cornerRadius,
+            cornerRadius,
+        ])
+        ctx.stroke()
+        ctx.fill()
 
-    // bottom
-    ctx.beginPath()
-    ctx.roundRect(obstacle.posX, obstacle.spaceBottom, player.width, height, [
-        cornerRadius,
-        cornerRadius,
-        0,
-        0,
-    ])
-    ctx.stroke()
-    ctx.fill()
+        // bottom
+        ctx.beginPath()
+        ctx.roundRect(obstacle.posX, obstacle.spaceBottom, player.width, height, [
+            cornerRadius,
+            cornerRadius,
+            0,
+            0,
+        ])
+        ctx.stroke()
+        ctx.fill()
+    }
 }
 
 function spawnObstacle(posX) {
@@ -109,18 +141,30 @@ function drawObstacles() {
 }
 
 function drawPlayer() {
-    ctx.fillStyle = colors.player
-    ctx.strokeStyle = "transparent"
-    ctx.beginPath()
-    ctx.roundRect(
-        player.posX,
-        player.posY,
-        player.width,
-        player.height,
-        cornerRadius
-    )
-    ctx.stroke()
-    ctx.fill()
+    // Check if image is loaded
+    if (playerImg.complete && playerImg.naturalWidth !== 0) {
+        ctx.drawImage(
+            playerImg, 
+            player.posX, 
+            player.posY, 
+            player.width, 
+            player.height
+        );
+    } else {
+        // Fallback to original drawing method
+        ctx.fillStyle = colors.player
+        ctx.strokeStyle = "transparent"
+        ctx.beginPath()
+        ctx.roundRect(
+            player.posX,
+            player.posY,
+            player.width,
+            player.height,
+            cornerRadius
+        )
+        ctx.stroke()
+        ctx.fill()
+    }
 }
 
 function jump() {
@@ -153,8 +197,6 @@ function start() {
         }
     }
 }
-
-start()
 
 function clear() {
     ctx.clearRect(0, 0, width, height)
@@ -213,4 +255,39 @@ function updatePlayer() {
             updateScoreDisplay()
         }
     })
+}
+
+// Wait for images to load before starting the game
+let imagesLoaded = 0;
+const totalImages = 2;
+
+function checkImagesLoaded() {
+    imagesLoaded++;
+    if (imagesLoaded === totalImages) {
+        console.log("All images loaded, starting game...");
+        start();
+    }
+}
+
+// Set up image load handlers
+playerImg.onload = checkImagesLoaded;
+obstacleImg.onload = checkImagesLoaded;
+
+// Handle image load errors - start game anyway with fallback colors
+playerImg.onerror = () => {
+    console.warn("Failed to load player image, using fallback");
+    checkImagesLoaded();
+};
+
+obstacleImg.onerror = () => {
+    console.warn("Failed to load obstacle image, using fallback");
+    checkImagesLoaded();
+};
+
+// If images are already cached/loaded
+if (playerImg.complete && playerImg.naturalWidth !== 0) {
+    checkImagesLoaded();
+}
+if (obstacleImg.complete && obstacleImg.naturalWidth !== 0) {
+    checkImagesLoaded();
 }
